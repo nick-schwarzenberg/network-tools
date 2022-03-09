@@ -1,6 +1,8 @@
 # UDP Point-to-Point Tunnel
 
-A simple bash script to set up a network-layer point-to-point tunnel using the Linux kernel modules FOU ([foo-over-udp](https://lwn.net/Articles/614433/)) and IPIP (IP in IP) on a virtual TUN device. This is useful for exchanging IPv4 packets between two machines or networks across a link that is only capable of carrying UDP payloads.
+[udp-tunnel.sh](udp-tunnel.sh) is a simple bash script to set up a network-layer point-to-point tunnel using the Linux kernel modules FOU ([foo-over-udp](https://lwn.net/Articles/614433/)) and IPIP (IP in IP) on a virtual TUN device. This is useful for exchanging IPv4 packets between two machines or networks across a link that is only capable of carrying UDP payloads.
+
+The script [udp-tunnel-socat.sh](udp-tunnel-socat.sh) achieves essentially the same functionality in userspace using the network utility `socat`. This is useful where the Kernel modules are not available and high performance is not required. Also, the script creates only a temporary TUN device which is automatically removed on exit once SIGINT is received. This script is referred to throughout this document as “socat variant”.
 
 
 ## How it works
@@ -39,7 +41,7 @@ Since the script makes changes to the kernel's network configuration, it needs t
 Usage: udp-tunnel.sh up RX_PORT TX_PORT REMOTE_IP [MTU]
        udp-tunnel.sh down RX_PORT
 ```
-
+For the socat variant, there are no *up* and *down* commands. The script always attempts to create a new temporary tunnel device, keeps running until SIGINT is received, and automatically removes the tunnel on exit.
 
 ### Command line arguments
 
@@ -78,7 +80,7 @@ $ sudo ./udp-tunnel.sh up 2001 2002 10.0.1.2 100
 
 Alice should now be able to ping Bob using `ping 10.0.2.2` and vice-versa. You can verify that the MTU is honored in terms of IP fragmentation by increasing the ping payload, e.g., `ping -s 128 10.0.2.2`.
 
-If, for example, Bob is not already connected to an existing network (such as 10.0.2.0/24), Alice would have no remote IP address to refer to Bob's machine. Considering the above example, her packets to 10.0.2.2 would still pass through the tunnel due to the explicit route set up by the script, but Bob's machine wouldn't know that packets to 10.0.2.2 actually belong to Bob. In general, if we don't have IP addresses from existing networks on either side, we can always make up a network and assign respective addresses to the tunnel. Back to the above example, Bob can tell his kernel that 10.0.2.2 belongs to him by assigning this address to the tunnel device:
+If, for example, Bob is not already connected to an existing network (such as 10.0.2.0/24), Alice would have no remote IP address to refer to Bob's machine. Considering the above example, her packets to 10.0.2.2 would still pass through the tunnel due to the explicit route set up by the script, but Bob's machine wouldn't know that packets to 10.0.2.2 actually belong to Bob. In general, if we don't have IP addresses from existing networks on either side, we can always make up a network and assign respective addresses to the tunnel. Back to the above example, Bob can tell his kernel that 10.0.2.2 belongs to him by assigning this address to the tunnel device (for the socat variant, replace *fou* with *udp*):
 ```
 $ sudo ip addr add 10.0.2.2 dev fou1
 ```
@@ -94,14 +96,14 @@ You can view a list of IPIP tunnel devices by:
 $ ip link show type ipip
 ```
 
-Note that this may include devices other than the ones created with this script. For instance, when loading the ipip kernel module, a dummy device `tunl0` is created automatically for handling unassigned IPIP traffic.
+Note that this may include devices other than the ones created with this script. For instance, when loading the IPIP kernel module, a dummy device `tunl0` is created automatically for handling unassigned IPIP traffic. For the socat variant, you want to check instead for devices of type `tun`.
 
-Open FOU ports accepting UDP packets are shown by:
+Open FOU ports accepting UDP packets (does not apply to socat variant) are shown by:
 ```
 $ ip fou show
 ```
 
-To check if and which traffic is actually sent to or received from the tunnel device, use a graphical tool such as Wireshark or run `tcpdump -i fouX -vv` where *fouX* must be one of the devices of the aforementioned list.
+To check if and which traffic is actually sent to or received from the tunnel device, use a graphical tool such as Wireshark or run `tcpdump -i fouX -vv` where *fouX* (or *udpX*) must be one of the devices of the aforementioned list.
 
 In case you messed up and the script failed half-way (e.g., because the tunnel device has been created but the receive port to listen at is in use), you can delete unused or broken devices by:
 ```
