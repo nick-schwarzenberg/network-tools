@@ -1,0 +1,33 @@
+{
+    "title": "network-tools",
+    "license": {
+        "id": "MIT"
+    },
+    "keywords": [
+        "Linux",
+        "bash",
+        "script",
+        "Ethernet",
+        "FOU",
+        "UDP"
+    ],
+    "related_identifiers": [
+        {
+            "identifier": "https://github.com/nick-schwarzenberg/network-tools",
+            "relation": "isSupplementTo",
+            "resource_type": "software"
+        },
+        {
+            "identifier": "https://lwn.net/Articles/614433/",
+            "relation": "references",
+            "resource_type": "publication-softwaredocumentation"
+        }
+    ],
+    "creators": [
+        {
+            "affiliation": "Vodafone Chair Mobile Communications Systems, Technische Universität Dresden, Germany",
+            "name": "Schwarzenberg, Nick",
+            "orcid": "0000-0003-1708-8793"
+        }
+    ]
+}

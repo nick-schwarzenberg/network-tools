@@ -1,6 +1,9 @@
 #!/bin/bash
-# nick.schwarzenberg@tu-dresden.de
-# May 2020
+#
+# Copyright 2020 nick.schwarzenberg@tu-dresden.de
+#
+# SPDX-License-Identifier: MIT
+#
 
 exit_on_error () {
 	if [ $? != 0 ]; then
