@@ -7,9 +7,13 @@
         "Linux",
         "bash",
         "script",
+        "tunnel",
+        "encapsulation",
         "Ethernet",
+        "IPv4",
+        "UDP",
         "FOU",
-        "UDP"
+        "socat"
     ],
     "related_identifiers": [
         {
